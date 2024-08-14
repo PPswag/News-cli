@@ -32,7 +32,7 @@ class News:
         info = self.get_top_headlines(country, category)
         urls = [article.get('url') for article in info.get('articles', [])]
         listed_url = []
-        for url in urls[0:5]:
+        for url in urls[0:7]:
             chrome_options = Options()
             chrome_options.add_argument("--headless") 
             chrome_options.add_argument("--disable-gpu")
@@ -44,7 +44,7 @@ class News:
             driver.get(url)
 
             try:
-                element = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.TAG_NAME, "p"))
+                element = WebDriverWait(driver, 4).until(EC.presence_of_element_located((By.TAG_NAME, "p"))
                 )
 
 
@@ -54,7 +54,7 @@ class News:
                 print(f"Actual URL: {actual_url}") 
                 listed_url.append(actual_url)
             except Exception as e:
-                print(e)
+                print("null: sadly this url is experiencing some issues")
             finally:
                 driver.quit()
         return listed_url
@@ -72,7 +72,7 @@ print(info)
         "title": page_title, 
         "author": author,
         "url": actual_url,
-        "summary": summary ( given by article newspaper package)
+        "summary": "summary ( given by article newspaper package)"
     }
 
     csv = basically like json, but better format
