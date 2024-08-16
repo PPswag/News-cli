@@ -55,7 +55,18 @@
       };
 
       devShells.default = pkgs.mkShell {
-        shellHook = "echo 'Welcome to the Python development environment! In here, you will be able to execute code with the necessary dependencies.'";
+        shellHook = ''
+          echo '
+                                                      .__  .__
+            ____   ______  _  ________           ____ |  | |__|
+          /    \_/ __ \ \/ \/ /  ___/  ______ _/ ___\|  | |  |
+          |   |  \  ___/\     /\___ \  /_____/ \  \___|  |_|  |
+          |___|  /\___  >\/\_//____  >          \___  >____/__|
+              \/     \/           \/               \/
+
+          Welcome to the Python development environment! In here,
+          you will be able to execute code with the necessary dependencies available.'
+        '';
         buildInputs = with pkgs; [
           (pkgs.poetry2nix.mkPoetryEnv {
             projectDir = ./.;
