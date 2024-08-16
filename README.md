@@ -1,6 +1,13 @@
-# news-cli
+```
+                                            .__  .__
+  ____   ______  _  ________           ____ |  | |__|
+ /    \_/ __ \ \/ \/ /  ___/  ______ _/ ___\|  | |  |
+|   |  \  ___/\     /\___ \  /_____/ \  \___|  |_|  |
+|___|  /\___  >\/\_//____  >          \___  >____/__|
+     \/     \/           \/               \/
+```
 
-pythonic news getter and aggregator
+a pythonic news getter and aggregator
 
 ## Development instructions
 
