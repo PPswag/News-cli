@@ -1,8 +1,4 @@
 import requests
-import json
-import csv
-from textblob import TextBlob
-from newspaper import Article
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
@@ -10,7 +6,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.options import Options
-import time
 from typing import List
 from fileConvert import *
 
@@ -26,7 +21,7 @@ class News:
         return response.json()
     def get_everything(self, query):
         url = f"{self.base_url}/everything?q={query}&apiKey={self.api_key}"
-        response = requests.get(url).json()
+        response = requests.get(url)
         return response.json()
     def fetch_top_headlines(self, country: str, category: str) -> List[str]:
         """
@@ -72,8 +67,7 @@ class News:
                 print(f"Actual URL: {actual_url}")  # Print the actual URL
                 listed_url.append(actual_url)  # Add the URL to the list
             except Exception as e:
-                print("null: sadly this url is experiencing some issues")
-
+                print("Null")
             finally:
                 driver.quit()  # Close the webdriver
 
@@ -85,7 +79,7 @@ news = News("e46d3ebc97c14f2eb35fe9ffb8ea328a")
 # info = news.fetch_top_headlines('us', 'business')
 query = 'bitcoin'
 every = news.get_everything(query)
-print(every)
+# print(every)
 # print(info)
 
 

@@ -4,29 +4,13 @@ import spacy
 from spacy.lang.en.stop_words import STOP_WORDS
 from string import punctuation
 from heapq import nlargest
-
-
-# # url = "https://www.vulture.com/2017/01/billy-eichner-billy-on-the-street-c-v-r.html"
-url = 'http://fox13now.com/2013/12/30/new-year-new-laws-obamacare-pot-guns-and-drones/'
-# nltk.data.path.append("/Users/siddhantpatel/nltk_data")
-
-# # Download the punkt tokenizer if it's not already downloaded
-# nltk.download('punkt', download_dir="/Users/siddhantpatel/nltk_data")
-# Fetch data
-article = Article(url)
-
-article.download()
-article.parse()
-# article.nlp()
-
-print(f'Title: {article.title}')
-print(f'Authors: {article.authors}')
-print(f'Publication Date: {article.publish_date}')
+from news import *
+import datetime
 
 def summarize(text, per):
+    
     nlp = spacy.load('en_core_web_sm')
     doc= nlp(text)
-    # tokens=[token.text for token in doc]
     word_frequencies={}
     for word in doc:
         if word.text.lower() not in list(STOP_WORDS):
@@ -43,7 +27,7 @@ def summarize(text, per):
     for sent in sentence_tokens:
         for word in sent:
             if word.text.lower() in word_frequencies.keys():
-                if sent not in sentence_scores.keys():                            
+                if sent not in sentence_scores.keys():
                     sentence_scores[sent]=word_frequencies[word.text.lower()]
                 else:
                     sentence_scores[sent]+=word_frequencies[word.text.lower()]
@@ -53,4 +37,27 @@ def summarize(text, per):
     summary=''.join(final_summary)
     return summary
 
-print(f'Summary: {summarize(article.text, 0.5)}')
+# url = 'http://fox13now.com/2013/12/30/new-year-new-laws-obamacare-pot-guns-and-drones/'
+# Fetch data
+query = 'burgers'
+responseDict = {}
+responseList = []
+every = news.get_everything(query)
+for i in range(0, 5):
+    url = every['articles'][i]['url']
+    article = Article(url)
+
+    article.download()
+    article.parse()
+    title = article.title if article.title else "Unknown"
+    authors = ', '.join(article.authors) if article.authors else "Unknown"
+    publish_date = article.publish_date if article.publish_date else "Unknown"
+    summary = summarize(article.text, 0.3)
+    # border = '-' * 50
+    responseDict['title'] = title
+    responseDict['author'] = authors
+    responseDict['url'] = url
+    responseDict['summary'] = summary
+    responseDict['publish_date'] = publish_date
+    responseList.append(responseDict)
+print(responseList)
