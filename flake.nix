@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 {
-  description = "Develoment and build environment for news-cli";
+  description = "Development and build environment for news-cli";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs";
   inputs.utils.url = "github:numtide/flake-utils";
