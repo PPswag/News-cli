@@ -1,6 +1,6 @@
 import requests
 import json
-import nltk
+import csv
 from textblob import TextBlob
 from newspaper import Article
 from selenium import webdriver
@@ -12,6 +12,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.options import Options
 import time
 from typing import List
+from fileConvert import *
 
 class News:
 
@@ -25,45 +26,67 @@ class News:
         return response.json()
     def get_everything(self, query):
         url = f"{self.base_url}/everything?q={query}&apiKey={self.api_key}"
-        response = requests.get(url)
+        response = requests.get(url).json()
         return response.json()
-    
     def fetch_top_headlines(self, country: str, category: str) -> List[str]:
+        """
+        Fetches the top headlines for a given country and category.
+
+        Args:
+            country (str): The country for which to fetch headlines.
+            category (str): The category for which to fetch headlines.
+
+        Returns:
+            List[str]: A list of URLs for the top headlines.
+        """
+        # Get the top headlines from the News API
         info = self.get_top_headlines(country, category)
+
+        # Extract the URLs and titles of the top headlines
         urls = [article.get('url') for article in info.get('articles', [])]
+        title = [article.get('title') for article in info.get('articles', [])]
+
         listed_url = []
         for url in urls[0:7]:
             chrome_options = Options()
-            chrome_options.add_argument("--headless") 
+            chrome_options.add_argument("--headless")  # Run Chrome in headless mode
             chrome_options.add_argument("--disable-gpu")
             chrome_options.add_argument("--no-sandbox")
-            chrome_options.add_argument("--disable-dev-shm-usage") # speed up the process, don't need to open up chrome
+            chrome_options.add_argument("--disable-dev-shm-usage")  # Speed up the process, don't need to open up chrome
+
+            # Create a Chrome webdriver with the specified options
             driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
-
+            # Open the URL in the webdriver
             driver.get(url)
 
             try:
-                element = WebDriverWait(driver, 4).until(EC.presence_of_element_located((By.TAG_NAME, "p"))
+                # Wait for the presence of a <p> tag on the page
+                element = WebDriverWait(driver, 4).until(
+                    EC.presence_of_element_located((By.TAG_NAME, "p"))
                 )
 
-
+                # Get the current URL after any redirections
                 actual_url = driver.current_url
 
-                page_title = driver.title
-                print(f"Actual URL: {actual_url}") 
-                listed_url.append(actual_url)
+                print(f"Actual URL: {actual_url}")  # Print the actual URL
+                listed_url.append(actual_url)  # Add the URL to the list
             except Exception as e:
                 print("null: sadly this url is experiencing some issues")
+
             finally:
-                driver.quit()
+                driver.quit()  # Close the webdriver
+
         return listed_url
 
 
 
 news = News("e46d3ebc97c14f2eb35fe9ffb8ea328a")
-info = news.fetch_top_headlines('us', 'business')
-print(info)
+# info = news.fetch_top_headlines('us', 'business')
+query = 'bitcoin'
+every = news.get_everything(query)
+print(every)
+# print(info)
 
 
 

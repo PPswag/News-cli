@@ -22,12 +22,11 @@ article.parse()
 print(f'Title: {article.title}')
 print(f'Authors: {article.authors}')
 print(f'Publication Date: {article.publish_date}')
-# print(f'Summary: {article.text}')
 
 def summarize(text, per):
     nlp = spacy.load('en_core_web_sm')
     doc= nlp(text)
-    tokens=[token.text for token in doc]
+    # tokens=[token.text for token in doc]
     word_frequencies={}
     for word in doc:
         if word.text.lower() not in list(STOP_WORDS):
@@ -52,7 +51,6 @@ def summarize(text, per):
     summary=nlargest(select_length, sentence_scores,key=sentence_scores.get)
     final_summary=[word.text for word in summary]
     summary=''.join(final_summary)
-    print(summary)
     return summary
 
-summarize(article.text, 0.5)
+print(f'Summary: {summarize(article.text, 0.5)}')
