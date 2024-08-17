@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "news-cli"
+version = "0.1.0"
+description = "A news getter and aggregator."
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "3.11.9"
+selenium = "^4.23.1"
+webdriver-manager = "^4.0.2"
+newspaper4k = "^0.9.3.1"
+spacy = "^3.7.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
