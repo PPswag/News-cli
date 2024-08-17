@@ -1,11 +1,5 @@
 import requests
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.chrome.options import Options
+import base64
 from typing import List
 from fileConvert import *
 
@@ -23,64 +17,100 @@ class News:
         url = f"{self.base_url}/everything?q={query}&apiKey={self.api_key}"
         response = requests.get(url)
         return response.json()
-    def fetch_top_headlines(self, country: str, category: str) -> List[str]:
-        """
-        Fetches the top headlines for a given country and category.
 
-        Args:
-            country (str): The country for which to fetch headlines.
-            category (str): The category for which to fetch headlines.
 
-        Returns:
-            List[str]: A list of URLs for the top headlines.
-        """
-        # Get the top headlines from the News API
-        info = self.get_top_headlines(country, category)
+    def fetch_decoded_batch_execute(self, id):
+        s = (
+            '[[["Fbv4je","[\\"garturlreq\\",[[\\"en-US\\",\\"US\\",[\\"FINANCE_TOP_INDICES\\",\\"WEB_TEST_1_0_0\\"],'
+            'null,null,1,1,\\"US:en\\",null,180,null,null,null,null,null,0,null,null,[1608992183,723341000]],'
+            '\\"en-US\\",\\"US\\",1,[2,3,4,8],1,0,\\"655000234\\",0,0,null,0],\\"' +
+            id +
+            '\\"]",null,"generic"]]]'
+        )
 
-        # Extract the URLs and titles of the top headlines
-        urls = [article.get('url') for article in info.get('articles', [])]
-        title = [article.get('title') for article in info.get('articles', [])]
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+            "Referer": "https://news.google.com/"
+        }
 
-        listed_url = []
-        for url in urls[0:7]:
-            chrome_options = Options()
-            chrome_options.add_argument("--headless")  # Run Chrome in headless mode
-            chrome_options.add_argument("--disable-gpu")
-            chrome_options.add_argument("--no-sandbox")
-            chrome_options.add_argument("--disable-dev-shm-usage")  # Speed up the process, don't need to open up chrome
+        response = requests.post(
+            "https://news.google.com/_/DotsSplashUi/data/batchexecute?rpcids=Fbv4je",
+            headers=headers,
+            data={"f.req": s}
+        ) # orginally wanted to use post, but it didn't work, thankfully this code showed me
 
-            # Create a Chrome webdriver with the specified options
-            driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+        if response.status_code != 200:
+            raise Exception("Failed to fetch data from Google.")
 
-            # Open the URL in the webdriver
-            driver.get(url)
+        text = response.text
+        header = '[\\"garturlres\\",\\"'
+        footer = '\\",'
+        if header not in text:
+            raise Exception(f"Header not found in response: {text}")
+        start = text.split(header, 1)[1]
+        if footer not in start:
+            raise Exception("Footer not found in response.")
+        url = start.split(footer, 1)[0]
+        return url
 
-            try:
-                # Wait for the presence of a <p> tag on the page
-                element = WebDriverWait(driver, 4).until(
-                    EC.presence_of_element_located((By.TAG_NAME, "p"))
-                )
+    def decode_google_news_url(self, source_url): 
+        # I copied this code, after using selnium, thanks to Huskley
+        url = requests.utils.urlparse(source_url)
+        path = url.path.split("/")
+        if url.hostname == "news.google.com" and len(path) > 1 and path[-2] == "articles":
+            base64_str = path[-1]
+            decoded_bytes = base64.urlsafe_b64decode(base64_str + '==')
+            decoded_str = decoded_bytes.decode('latin1')
 
-                # Get the current URL after any redirections
-                actual_url = driver.current_url
+            prefix = b'\x08\x13\x22'.decode('latin1')
+            if decoded_str.startswith(prefix):
+                decoded_str = decoded_str[len(prefix):]
 
-                print(f"Actual URL: {actual_url}")  # Print the actual URL
-                listed_url.append(actual_url)  # Add the URL to the list
-            except Exception as e:
-                print("Null")
-            finally:
-                driver.quit()  # Close the webdriver
+            suffix = b'\xd2\x01\x00'.decode('latin1')
+            if decoded_str.endswith(suffix):
+                decoded_str = decoded_str[:-len(suffix)]
 
-        return listed_url
+            bytes_array = bytearray(decoded_str, 'latin1')
+            length = bytes_array[0]
+            if length >= 0x80:
+                decoded_str = decoded_str[2:length+1]
+            else:
+                decoded_str = decoded_str[1:length+1]
+
+            if decoded_str.startswith("AU_yqL"):
+                return self.fetch_decoded_batch_execute(base64_str)
+
+            return decoded_str
+        else:
+            return source_url
+
+    def fetch_all_genesis_url(self, url) -> List[str]:
+        x = len(url)
+        genesis_url = []
+
+        for i in range(x):
+            decoded_url = self.decode_google_news_url(url[i]['url'])
+            genesis_url.append(decoded_url)
+        return genesis_url
+
+
 
 
 
 news = News("e46d3ebc97c14f2eb35fe9ffb8ea328a")
+info = news.get_top_headlines('us', 'business')
+source = news.fetch_all_genesis_url(info['articles'])
+print(source)
+# for i in range(0, 5):
+#     source_url = info['articles'][i]['url']
+#     decoded_url = news.decode_google_news_url(source_url)
+
+#     print(decoded_url)
+
 # info = news.fetch_top_headlines('us', 'business')
-query = 'bitcoin'
-every = news.get_everything(query)
-# print(every)
-# print(info)
+# query = 'bitcoin'
+# every = news.get_everything(query)
+
 
 
 
