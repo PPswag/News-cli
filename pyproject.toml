@@ -11,6 +11,10 @@ selenium = "^4.23.1"
 webdriver-manager = "^4.0.2"
 newspaper4k = "^0.9.3.1"
 spacy = "^3.7.5"
+transformers = "^4.44.0"
+sentencepiece = "^0.2.0"
+sacremoses = "^0.1.1"
+lxml-html-clean = "^0.2.0"
 
 
 [build-system]

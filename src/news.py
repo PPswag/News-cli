@@ -11,7 +11,7 @@ class News:
 
     def get_top_headlines(self, country, category):
         url = f"{self.base_url}/top-headlines?country={country}&category={category}&apiKey={self.api_key}"
-        response = requests.get(url) # simple code to get the top headlines
+        response = requests.get(url) 
         return response.json()
     def get_everything(self, query):
         url = f"{self.base_url}/everything?q={query}&apiKey={self.api_key}"
@@ -37,7 +37,7 @@ class News:
             "https://news.google.com/_/DotsSplashUi/data/batchexecute?rpcids=Fbv4je",
             headers=headers,
             data={"f.req": s}
-        ) # orginally wanted to use post, but it didn't work, thankfully this code showed me
+        ) 
 
         if response.status_code != 200:
             raise Exception("Failed to fetch data from Google.")
@@ -84,32 +84,30 @@ class News:
         else:
             return source_url
 
-    def fetch_all_genesis_url(self, url) -> List[str]:
-        x = len(url)
-        genesis_url = []
+    def fetch_all_genesis_url(self, country, category) -> List[str]:
+        categories = ["business", "entertainment", "general", "health", "science", "sports", "technology"]
+        if category.lower() in categories:
+            url = self.get_top_headlines(country, category)['articles']
+            x = len(url)
+            genesis_url = []
 
-        for i in range(x):
-            decoded_url = self.decode_google_news_url(url[i]['url'])
-            genesis_url.append(decoded_url)
-        return genesis_url
+            for i in range(x):
+                decoded_url = self.decode_google_news_url(url[i]['url'])
+                genesis_url.append(decoded_url)
+        else:
+            raise ValueError("category must be one of these: business, entertainment, general, health, science, sports, technology")
+        return genesis_url if x > 0 else None
+
 
 
 
 
 
 news = News("e46d3ebc97c14f2eb35fe9ffb8ea328a")
-info = news.get_top_headlines('us', 'business')
-source = news.fetch_all_genesis_url(info['articles'])
+# info = news.get_top_headlines('us', 'business')
+source = news.fetch_all_genesis_url('us', 'EnterTainment')
 print(source)
-# for i in range(0, 5):
-#     source_url = info['articles'][i]['url']
-#     decoded_url = news.decode_google_news_url(source_url)
 
-#     print(decoded_url)
-
-# info = news.fetch_top_headlines('us', 'business')
-# query = 'bitcoin'
-# every = news.get_everything(query)
 
 
 

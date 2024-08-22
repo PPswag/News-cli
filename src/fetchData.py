@@ -1,4 +1,3 @@
-import nltk
 from newspaper import Article
 import spacy
 from spacy.lang.en.stop_words import STOP_WORDS
@@ -6,6 +5,7 @@ from string import punctuation
 from heapq import nlargest
 from news import *
 import datetime
+from transformers import *
 
 def summarize(text, per):
     
@@ -43,6 +43,7 @@ query = 'burgers'
 responseDict = {}
 responseList = []
 every = news.get_everything(query)
+info = news.fetch_all_genesis_url(every['articles'])
 for i in range(0, 5):
     url = every['articles'][i]['url']
     article = Article(url)
@@ -53,7 +54,6 @@ for i in range(0, 5):
     authors = ', '.join(article.authors) if article.authors else "Unknown"
     publish_date = article.publish_date if article.publish_date else "Unknown"
     summary = summarize(article.text, 0.3)
-    # border = '-' * 50
     responseDict['title'] = title
     responseDict['author'] = authors
     responseDict['url'] = url
